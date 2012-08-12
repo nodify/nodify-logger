@@ -1,0 +1,24 @@
+{
+  "S": {
+    "one": "message one",
+    "two": "message two"
+  },
+  "I": {
+    "three": "message three",
+    "four": "message four",
+    "formats": "format test (%s)",
+    "formatd": "format test (%d)"
+  },
+  "W": {
+    "five": "message five",
+    "six": "message six"
+  },
+  "E": {
+    "seven": "message seven",
+    "eight": "message eight"
+  },
+  "F": {
+    "nine": "message nine",
+    "ten": "message ten"
+  }
+}

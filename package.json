@@ -1,0 +1,27 @@
+{
+  "name": "nodify-logger",
+  "description": "Simple logger inspired by the VMS Message facility.",
+  "maintainers": [
+    {
+      "name": "Meadhbh Hamrick",
+      "email": "meadhbh@smithee.us",
+      "web": "http://nodify.us/"
+    }
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/nodify/nodify-logger/raw/master/LICENSE"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/nodify/nodify-logger"
+    }
+  ],
+  "version": "0.0.1",
+  "main": "./nodify-logger.js",
+  "directories": [ "test", "examples" ],
+  "keywords": [ "logging", "VMS" ]
+}
