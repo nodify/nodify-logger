@@ -12,11 +12,32 @@
 
   var public = {};
 
-  var severities = [ "S", "I", "W", "E", "F" ];
+  var severities = [ "D", "I", "S", "W", "E", "F" ];
+  var severity_string = severities.join( '' );
 
   if( module && module.exports ) {
     module.exports = public;
   }
+
+  function _getDate() {
+    return (new Date()).toISOString();
+  }
+
+  C_FACILITY = public.C_FACILITY = 0x01;
+  C_SEVERITY = public.C_SEVERITY = 0x02;
+  C_ABBREV   = public.C_ABBREV   = 0x04;
+  C_DATETIME = public.C_DATETIME = 0x08;
+  C_MESSAGE  = public.C_MESSAGE  = 0x10;
+  C_ALL      = public.C_ALL      = 0x1F;
+  C_DEFAULT  = public.C_DEFAULT  = 0x1E;
+
+  L_DEBUG    = public.L_DEBUG    = 0;
+  L_INFO     = public.L_INFO     = 1;
+  L_SUCCESS  = public.L_SUCCESS  = 2;
+  L_WARNING  = public.L_WARNING  = 3;
+  L_ERROR    = public.L_ERROR    = 4;
+  L_FATAL    = public.L_FATAL    = 5;
+  L_DEFAULT  = public.L_DEFAULT  = 0;
 
   public.createInstance = function( options, callback ) {
     if( ( 'function'  === typeof options ) &&
@@ -44,14 +65,19 @@
     var messages = {};
     var that = this;
 
-    if( ! this.options.emitter ) {
-      this.options.emitter = util.error;
-    }
+    this.facility = this.options.facility ? this.options.facility : "UNKNOWN";
+    this.emitter = this.options.emitter ? this.options.emitter : util.error;
+    this.date = this.options.date ? this.options.date : _getDate;
+    this.bits = this.options.components ? this.options.components : C_DEFAULT;
+    this.level = this.options.level ? this.options.level : L_DEFAULT;
 
     if( this.options.messagesPath ) {
-      fs.readFile( this.options.messagesPath, 'utf8', process_messages_from_file );
+      fs.readFile( this.options.messagesPath, 'utf8', function( err, data ) {
+        if( err ) { throw err; }
+        process_messages( JSON.parse( data ) );
+      } );
     } else {
-      process_messages_from_options( this.options.messages );
+      process_messages( this.options.messages );
     }
 
     function process_messages( data ) {
@@ -62,30 +88,14 @@
         if( current ) {
           for( var abbrev in current ) {
             var selector = index + '_' + abbrev.toUpperCase();
-            var message_text = '%' + that.options.facility + '-' +
-              index + '-' + abbrev.toUpperCase() + '; ' +
-              current[ abbrev ] + '.';
 
             messages[ selector ] = {
-              text: message_text,
+              text: current[ abbrev ],
               abbrev: abbrev.toUpperCase(),
               severity: index
             };
           }
         }
-      }
-    }
-
-    function process_messages_from_file ( err, data ) {
-      if( data ) {
-        process_messages( JSON.parse( data ) );
-      }
-      process_messages_from_options( that.options.messages );
-    }
-
-    function process_messages_from_options( data ) {
-      if( data ) {
-        process_messages( data );
       }
 
       callback( messages );
@@ -93,17 +103,55 @@
 
   };
 
+  logger.prototype.set_components = function ( newmask ) {
+    var rv = this.bits;
+
+    if( newmask ) {
+      this.bits = newmask;
+    }
+
+    return rv;
+  };
+
+  logger.prototype.set_level = function ( newlevel ) {
+    var rv = this.level;
+
+    if( newlevel ) {
+      this.level = newlevel;
+    }
+
+    return rv;
+  };
+
   logger.prototype.log = function ( selector, parameters ) {
-    if( 'object' === typeof selector ) {
-      this.log( selector.text, parameters );
+    switch ( typeof selector ) {
+    case 'string':
+      if( parameters && parameters.length > 0 ) {
+        return this.log( util.format( selector, parameters ) );
+      } else {
+        this.emitter( [selector] );
+        return selector;
+      }
+      break;
+
+    case 'object':
+      if( severity_string.indexOf( selector.severity ) < this.level ) {
+        return;
+      }
+      
+      var message = '%';
+      if( this.bits & C_FACILITY ) { message += this.facility; }
+      if( this.bits & C_SEVERITY ) { message += '-' + selector.severity; }
+      if( this.bits & C_ABBREV ) { message += '-' + selector.abbrev; }
+      if( this.bits & C_DATETIME ) { message += '|' + this.date(); }
+      if( this.bits & C_MESSAGE ) { message += '; ' + selector.text; }
+      message += '.';
+
+      var text = this.log( message, parameters );
       if( 'F' === selector.severity ) {
-        throw Error( selector.text );
+        throw Error( text );
       }
-    } else {
-      if( parameters && ( parameters.length > 0 ) ) {
-        selector = util.format( selector, parameters );
-      }
-      this.options.emitter( [selector] );
+      break;
     }
   };
 })();

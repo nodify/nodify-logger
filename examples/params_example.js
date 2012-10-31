@@ -1,4 +1,4 @@
-var logger = require( './nodify-logger' );
+var logger = require( '../nodify-logger' );
 var logger_options = {
   facility: 'TEST',
   messages: {
