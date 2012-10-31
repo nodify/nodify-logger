@@ -30,10 +30,9 @@ get something like this on the console:
 
 This had a few benefits for programmers:
 
-  # It was easy to change error messages; they were all in one file.
-  # It was easy to find where messages were emitted since you searched for
-    the macro and not the string.
-  # It was pretty easy to internationalize.
+  1. It was easy to change error messages; they were all in one file.
+  2. It was easy to find where messages were emitted since you searched for the macro and not the string.
+  3. It was pretty easy to internationalize.
 
 nodify-logger is an attempt to get something like the old VMS message utility
 for node applications. Instead of a "messages" file, we use a JSON data

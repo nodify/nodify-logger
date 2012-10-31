@@ -50,7 +50,7 @@ var test_fixtures_01 = {
 var create_options_02 = {
   emitter: test_emitter,
   facility: 'LOGT02',
-  messagesPath: __dirname + '/test_messages.json'
+  messages_path: __dirname + '/test_messages.json'
 };
 
 var test_fixtures_02 = {

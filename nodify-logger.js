@@ -9,6 +9,7 @@
 ( function () {
   var util   = require( 'util' );
   var fs     = require( 'fs' );
+  var path_module = require( 'path' );
 
   var public = {};
 
@@ -29,7 +30,7 @@
   C_DATETIME = public.C_DATETIME = 0x08;
   C_MESSAGE  = public.C_MESSAGE  = 0x10;
   C_ALL      = public.C_ALL      = 0x1F;
-  C_DEFAULT  = public.C_DEFAULT  = 0x1E;
+  C_DEFAULT  = public.C_DEFAULT  = ( C_FACILITY | C_SEVERITY | C_ABBREV | C_MESSAGE );
 
   L_DEBUG    = public.L_DEBUG    = 0;
   L_INFO     = public.L_INFO     = 1;
@@ -71,13 +72,41 @@
     this.bits = this.options.components ? this.options.components : C_DEFAULT;
     this.level = this.options.level ? this.options.level : L_DEFAULT;
 
-    if( this.options.messagesPath ) {
-      fs.readFile( this.options.messagesPath, 'utf8', function( err, data ) {
+    if( this.options.explicit_path ) {
+      process_explicit_path( this.options.explicit_path );
+    } else if( this.options.messages_path ) {
+      process_messages_path( this.options.messages_path );
+    } else {
+      process_messages( this.options.messages );
+    }
+
+    function process_messages_path( path ) {
+      if( that.options.lang ) {
+        process_trial_path( that.options.lang, path );
+      } else if( process.env.LANG ) {
+        process_trial_path( process.env.LANG.split('.')[0], path );
+      } else {
+        process_explicit_path( path );
+      }
+    }
+
+    function process_trial_path( lang, path ) {
+      var trial_path = path_module.join( path_module.dirname( path ),
+                                         lang + '.' + path_module.basename( path ) );
+      fs.stat( trial_path, function( err , stats ) {
+        if( err ) {
+          process_explicit_path( path );
+        } else {
+          process_explicit_path( trial_path );
+        }
+      } );
+    }
+
+    function process_explicit_path ( path ) {
+      fs.readFile( path, 'utf8', function( err, data ) {
         if( err ) { throw err; }
         process_messages( JSON.parse( data ) );
       } );
-    } else {
-      process_messages( this.options.messages );
     }
 
     function process_messages( data ) {

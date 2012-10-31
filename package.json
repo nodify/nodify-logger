@@ -20,7 +20,7 @@
       "url": "https://github.com/nodify/nodify-logger"
     }
   ],
-  "version": "0.2",
+  "version": "0.2.1",
   "main": "./nodify-logger.js",
   "directories": [ "test", "examples" ],
   "keywords": [ "logging", "VMS" ]
