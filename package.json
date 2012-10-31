@@ -6,6 +6,11 @@
       "name": "Meadhbh Hamrick",
       "email": "meadhbh@smithee.us",
       "web": "http://nodify.us/"
+    },
+    {
+      "name": "Meadhbh Hamrick",
+      "email": "OhMeadhbh@gmail.com",
+      "web": "http://meadhbh.org/"
     }
   ],
   "licenses": [
@@ -20,7 +25,7 @@
       "url": "https://github.com/nodify/nodify-logger"
     }
   ],
-  "version": "0.2.1",
+  "version": "0.2.2",
   "main": "./nodify-logger.js",
   "directories": [ "test", "examples" ],
   "keywords": [ "logging", "VMS" ]
