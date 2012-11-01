@@ -7,7 +7,8 @@
     "three": "message three",
     "four": "message four",
     "formats": "format test (%s)",
-    "formatd": "format test (%d)"
+    "formatd": "format test (%d)",
+    "formatm": "format test (%d,%s)"
   },
   "W": {
     "five": "message five",

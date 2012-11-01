@@ -15,7 +15,8 @@ var create_options_01 = {
       three: "message three",
       four: "message four",
       formats: "format test (%s)",
-      formatd: "format test (%d)"
+      formatd: "format test (%d)",
+      formatm: "format test (%d,%s)"
     },
     W: {
       five: "message five",
@@ -44,13 +45,14 @@ var test_fixtures_01 = {
   F_NINE: "%LOGT01-F-NINE; message nine.",
   F_TEN: "%LOGT01-F-TEN; message ten.",
   I_FORMATS: "%LOGT01-I-FORMATS; format test (test string).",
-  I_FORMATD: "%LOGT01-I-FORMATD; format test (1337)."
+  I_FORMATD: "%LOGT01-I-FORMATD; format test (1337).",
+  I_FORMATM: "%LOGT01-I-FORMATM; format test (1337,test string)."
 };
 
 var create_options_02 = {
   emitter: test_emitter,
   facility: 'LOGT02',
-  messages_path: __dirname + '/test_messages.json'
+  explicit_path: __dirname + '/test_messages.json'
 };
 
 var test_fixtures_02 = {
@@ -65,7 +67,30 @@ var test_fixtures_02 = {
   F_NINE: "%LOGT02-F-NINE; message nine.",
   F_TEN: "%LOGT02-F-TEN; message ten.",
   I_FORMATS: "%LOGT02-I-FORMATS; format test (test string).",
-  I_FORMATD: "%LOGT02-I-FORMATD; format test (1337)."
+  I_FORMATD: "%LOGT02-I-FORMATD; format test (1337).",
+  I_FORMATM: "%LOGT02-I-FORMATM; format test (1337,test string)."
+};
+
+var create_options_03 = {
+  emitter: test_emitter,
+  facility: 'LOGT03',
+  messages_path: __dirname + '/test_messages.json'
+};
+
+var test_fixtures_03 = {
+  I_DINGO: "%LOGT03-I-DINGO; i am a deterministic dingo.",
+  I_RANDOM: "%LOGT03-I-RANDOM; i am a random dingo."
+};
+
+var create_options_04 = {
+  emitter: test_emitter,
+  facility: 'LOGT04',
+  messages_path: __dirname + '/test_messages.json',
+  lang: 'tlh'
+};
+
+var test_fixtures_04 = {
+  S_QAPLA: "%LOGT04-S-QAPLA; romuluSnganpu' vISuvrup."
 };
 
 function test_emitter ( message ) {
@@ -78,14 +103,42 @@ assert.equal( 'function', typeof logger.createInstance );
 
 /* Now call test_this() to test the logger with the first options set */
 test_this( create_options_01, test_fixtures_01, function () {
-  /* and now we test with the second options set */
-  test_this( create_options_02, test_fixtures_02 );
+  _round_2();
 } );
+
+function _round_2() {
+  /* and now we test with the second options set */
+  test_this( create_options_02, test_fixtures_02, function () {
+    _round_3();
+  } );
+}
+
+function _round_3() {
+  /* test options set 3: try to find en_US.messages.json */
+  process.env.LANG = "en_US";
+  simple_test( create_options_03, test_fixtures_03, function () {
+    _round_4();
+  } );
+}
+
+function _round_4() {
+  /* test options set 4: wherein we speak a little klingon */
+  simple_test( create_options_04, test_fixtures_04 );
+}
+
+function simple_test( options, test_fixtures, callback ) {
+  logger.createInstance( options, function( log_function, log_messages ) {
+    for( a in test_fixtures ) {
+      log_function( log_messages[ a ] )
+      assert.equal( test_fixtures[ a ], test_emitter_global[0] );
+    }
+    callback && callback();
+  } );
+};
 
 function test_this ( options, test_fixtures, callback ) {
 
   logger.createInstance( options, function( log_function, log_messages, log_instance ) {
-
     assert.equal( 'function', typeof log_function ); 
     assert.equal( 'object', typeof log_messages ); 
     assert.equal( 'object', typeof log_instance ); 
@@ -115,6 +168,8 @@ function test_this ( options, test_fixtures, callback ) {
     assert.equal( test_emitter_global, test_fixtures.I_FORMATS );
     log_function( log_messages.I_FORMATD, 1337 );
     assert.equal( test_emitter_global, test_fixtures.I_FORMATD);
+    log_function( log_messages.I_FORMATM, 1337, "test string" );
+    assert.equal( test_emitter_global, test_fixtures.I_FORMATM);
 
     callback && callback();
   } );

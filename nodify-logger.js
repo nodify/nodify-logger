@@ -52,7 +52,8 @@
     instance.init( function ( messages ) {
       var log_function = function( m ) {
         var p = Array.prototype.slice.call( arguments, 1 );
-        instance.log.apply( instance, [ m, p ] );
+        p.unshift( m );
+        instance.log.apply( instance, p );
       };
       callback && callback( log_function, messages, instance );
     } );
@@ -152,11 +153,13 @@
     return rv;
   };
 
-  logger.prototype.log = function ( selector, parameters ) {
+  logger.prototype.log = function ( selector ) {
+    var parameters = Array.prototype.slice.call( arguments, 1 );
     switch ( typeof selector ) {
     case 'string':
       if( parameters && parameters.length > 0 ) {
-        return this.log( util.format( selector, parameters ) );
+        parameters.unshift( selector );
+        return this.log( util.format.apply( this, parameters ) );
       } else {
         this.emitter( [selector] );
         return selector;
@@ -176,7 +179,8 @@
       if( this.bits & C_MESSAGE ) { message += '; ' + selector.text; }
       message += '.';
 
-      var text = this.log( message, parameters );
+      parameters.unshift( message );
+      var text = this.log.apply( this, parameters );
       if( 'F' === selector.severity ) {
         throw Error( text );
       }
